@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ConstructionLine.CodingChallenge
 {
     public class SearchEngine
     {
-        private readonly List<Shirt> _shirts;
+        private readonly IQueryable<Shirt> _shirts;
 
-        public SearchEngine(List<Shirt> shirts)
+        public SearchEngine(IQueryable<Shirt> shirts)
         {
             _shirts = shirts;
 
@@ -17,10 +18,27 @@ namespace ConstructionLine.CodingChallenge
 
         public SearchResults Search(SearchOptions options)
         {
-            // TODO: search logic goes here.
+            var shirts = _shirts.AsQueryable();
 
+            if (options.Sizes.Count > 0 )
+            {
+                shirts  = shirts.Where(x => options.Sizes.Contains(x.Size));
+            }
+
+            if (options.Colors.Count > 0)
+            {
+                shirts = shirts.Where(x =>  options.Colors.Contains(x.Color));
+            }
+
+            var SizeCounts = Size.All.AsQueryable().GroupBy(s=>s).Select(c => new SizeCount { Size = c.Key, Count = _shirts.Where(x => options.Sizes.Contains(x.Size)).Count(x=>x.Size.Id == c.Key.Id) });
+            var ColorCounts = Color.All.AsQueryable().GroupBy(s => s).Select(c => new ColorCount { Color = c.Key, Count = _shirts.Where(x => options.Colors.Contains(x.Color)).Count(x => x.Color.Id == c.Key.Id) });
+            
+           
             return new SearchResults
             {
+                Shirts = shirts.ToList(),
+                ColorCounts = ColorCounts.ToList(),
+                SizeCounts = SizeCounts.ToList()
             };
         }
     }

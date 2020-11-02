@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 
 namespace ConstructionLine.CodingChallenge.Tests
@@ -10,14 +11,14 @@ namespace ConstructionLine.CodingChallenge.Tests
         [Test]
         public void Test()
         {
-            var shirts = new List<Shirt>
+            var allShirts = new List<Shirt>()
             {
                 new Shirt(Guid.NewGuid(), "Red - Small", Size.Small, Color.Red),
                 new Shirt(Guid.NewGuid(), "Black - Medium", Size.Medium, Color.Black),
                 new Shirt(Guid.NewGuid(), "Blue - Large", Size.Large, Color.Blue),
-            };
+            }.AsQueryable();
 
-            var searchEngine = new SearchEngine(shirts);
+            var searchEngine = new SearchEngine(allShirts);
 
             var searchOptions = new SearchOptions
             {
@@ -28,8 +29,8 @@ namespace ConstructionLine.CodingChallenge.Tests
             var results = searchEngine.Search(searchOptions);
 
             AssertResults(results.Shirts, searchOptions);
-            AssertSizeCounts(shirts, searchOptions, results.SizeCounts);
-            AssertColorCounts(shirts, searchOptions, results.ColorCounts);
+            AssertSizeCounts(allShirts.ToList(), searchOptions, results.SizeCounts);
+            AssertColorCounts(allShirts.ToList(), searchOptions, results.ColorCounts);
         }
     }
 }

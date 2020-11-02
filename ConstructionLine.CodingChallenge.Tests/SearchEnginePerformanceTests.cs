@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ConstructionLine.CodingChallenge.Tests.SampleData;
 using NUnit.Framework;
 
@@ -9,16 +10,15 @@ namespace ConstructionLine.CodingChallenge.Tests
     [TestFixture]
     public class SearchEnginePerformanceTests : SearchEngineTestsBase
     {
-        private List<Shirt> _shirts;
+        private IQueryable<Shirt> _shirts;
         private SearchEngine _searchEngine;
 
         [SetUp]
         public void Setup()
         {
-            
             var dataBuilder = new SampleDataBuilder(50000);
-
-            _shirts = dataBuilder.CreateShirts();
+            
+            _shirts = dataBuilder.CreateShirts().AsQueryable();
 
             _searchEngine = new SearchEngine(_shirts);
         }
@@ -41,8 +41,8 @@ namespace ConstructionLine.CodingChallenge.Tests
             Console.WriteLine($"Test fixture finished in {sw.ElapsedMilliseconds} milliseconds");
 
             AssertResults(results.Shirts, options);
-            AssertSizeCounts(_shirts, options, results.SizeCounts);
-            AssertColorCounts(_shirts, options, results.ColorCounts);
+            AssertSizeCounts(_shirts.ToList(), options, results.SizeCounts);
+            AssertColorCounts(_shirts.ToList(), options, results.ColorCounts);
         }
     }
 }
