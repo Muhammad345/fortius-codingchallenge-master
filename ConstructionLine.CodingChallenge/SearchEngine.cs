@@ -20,26 +20,54 @@ namespace ConstructionLine.CodingChallenge
         {
             var shirts = _shirts.AsQueryable();
 
-            if (options.Sizes.Count > 0 )
+            if (options.Sizes.Count > 0)
             {
-                shirts  = shirts.Where(x => options.Sizes.Contains(x.Size));
+                shirts = shirts.Where(x => options.Sizes.Contains(x.Size));
             }
 
             if (options.Colors.Count > 0)
             {
-                shirts = shirts.Where(x =>  options.Colors.Contains(x.Color));
+                shirts = shirts.Where(x => options.Colors.Contains(x.Color));
             }
 
-            var SizeCounts = Size.All.AsQueryable().GroupBy(s=>s).Select(c => new SizeCount { Size = c.Key, Count = _shirts.Where(x => options.Sizes.Contains(x.Size)).Count(x=>x.Size.Id == c.Key.Id) });
-            var ColorCounts = Color.All.AsQueryable().GroupBy(s => s).Select(c => new ColorCount { Color = c.Key, Count = _shirts.Where(x => options.Colors.Contains(x.Color)).Count(x => x.Color.Id == c.Key.Id) });
-            
-           
+            var SizeCounts = _shirts.Where(x => options.Colors.Contains(x.Color)).GroupBy(s => s.Size).Select(c => new SizeCount { Size = c.Key, Count = c.Count() }).ToList();
+            var ColorCounts = _shirts.Where(x => options.Sizes.Contains(x.Size)).GroupBy(s => s.Color).Select(c => new ColorCount { Color = c.Key, Count = c.Count() }).ToList();
+
+            DefaultSize(SizeCounts);
+            DefaultColor(ColorCounts);
+
             return new SearchResults
             {
                 Shirts = shirts.ToList(),
-                ColorCounts = ColorCounts.ToList(),
-                SizeCounts = SizeCounts.ToList()
+                ColorCounts = ColorCounts,
+                SizeCounts = SizeCounts
             };
         }
+
+        private static void DefaultSize(List<SizeCount> sizeCounts)
+        {
+            foreach (var item in Size.All)
+            {
+                var sizeCount = new SizeCount { Size = item, Count = 0 };
+                if (!sizeCounts.Where(x => x.Size.Id == item.Id).Any())
+                {
+                    sizeCounts.Add(sizeCount);
+                }
+            }
+        }
+
+        private static void DefaultColor(List<ColorCount> colorCounts)
+        {
+            foreach (var item in Color.All)
+            {
+                var sizeCount = new ColorCount { Color = item, Count = 0 };
+                if (!colorCounts.Where(x => x.Color.Id == item.Id).Any())
+                {
+                    colorCounts.Add(sizeCount);
+                }
+            }
+        }
+
+
     }
 }
